@@ -546,6 +546,221 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
     )
 
 
+
+class StudySuggestion(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    discipline_name: str
+    discipline_id: str
+    urgency_score: float
+    reason: str
+    remaining_units: int
+    remaining_days: int
+
+
+class CompletionPrediction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    scenario: str
+    units_per_day: float
+    predicted_completion_date: str
+    days_until_completion: int
+    on_track: bool
+
+
+class CompletionSimulation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    average_productivity: float
+    current_prediction: Optional[CompletionPrediction]
+    scenarios: List[CompletionPrediction]
+    warning: Optional[str]
+
+
+@api_router.get("/dashboard/study-suggestion")
+async def get_study_suggestion(current_user: User = Depends(get_current_user)):
+    disciplines = await db.disciplines.find(
+        {"user_id": current_user.id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    if not disciplines:
+        return {"suggestion": None, "message": "Nenhuma disciplina criada ainda"}
+    
+    now = datetime.now(timezone.utc)
+    suggestions = []
+    
+    for discipline in disciplines:
+        tracks = await db.tracks.find(
+            {"discipline_id": discipline["id"]},
+            {"_id": 0, "id": 1}
+        ).to_list(1000)
+        
+        track_ids = [t["id"] for t in tracks]
+        
+        if not track_ids:
+            continue
+        
+        units = await db.units.find(
+            {"track_id": {"$in": track_ids}},
+            {"_id": 0}
+        ).to_list(10000)
+        
+        total_units = len(units)
+        completed_units = sum(1 for u in units if u["completed"])
+        remaining_units = total_units - completed_units
+        
+        if remaining_units == 0:
+            continue
+        
+        deadline_str = discipline["deadline"]
+        if 'T' in deadline_str:
+            deadline_date = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+        else:
+            deadline_date = datetime.fromisoformat(deadline_str + "T00:00:00+00:00")
+        
+        remaining_days = max(1, (deadline_date - now).days)
+        urgency_score = remaining_units / remaining_days
+        
+        progress_percentage = (completed_units / total_units * 100) if total_units > 0 else 0
+        
+        if urgency_score > 2:
+            reason = "Prazo próximo e muitas UA restantes"
+        elif progress_percentage < 30:
+            reason = "Baixo progresso em relação ao prazo"
+        elif remaining_days < 7:
+            reason = "Prazo muito próximo"
+        else:
+            reason = "Disciplina com maior urgência"
+        
+        suggestions.append({
+            "discipline_name": discipline["name"],
+            "discipline_id": discipline["id"],
+            "urgency_score": round(urgency_score, 2),
+            "reason": reason,
+            "remaining_units": remaining_units,
+            "remaining_days": remaining_days
+        })
+    
+    if not suggestions:
+        return {"suggestion": None, "message": "Todas as disciplinas estão completas"}
+    
+    suggestions.sort(key=lambda x: x["urgency_score"], reverse=True)
+    top_suggestion = suggestions[0]
+    
+    return {
+        "suggestion": StudySuggestion(**top_suggestion),
+        "all_suggestions": suggestions[:3]
+    }
+
+
+@api_router.get("/dashboard/completion-simulation")
+async def get_completion_simulation(current_user: User = Depends(get_current_user)):
+    disciplines = await db.disciplines.find(
+        {"user_id": current_user.id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    if not disciplines:
+        return {
+            "average_productivity": 0,
+            "current_prediction": None,
+            "scenarios": [],
+            "warning": None
+        }
+    
+    now = datetime.now(timezone.utc)
+    
+    total_completed_units = 0
+    oldest_completion_date = None
+    total_remaining_units = 0
+    earliest_deadline = None
+    
+    for discipline in disciplines:
+        tracks = await db.tracks.find(
+            {"discipline_id": discipline["id"]},
+            {"_id": 0, "id": 1}
+        ).to_list(1000)
+        
+        track_ids = [t["id"] for t in tracks]
+        
+        if track_ids:
+            units = await db.units.find(
+                {"track_id": {"$in": track_ids}},
+                {"_id": 0}
+            ).to_list(10000)
+            
+            completed_units = [u for u in units if u["completed"] and u.get("completed_at")]
+            total_completed_units += len(completed_units)
+            total_remaining_units += len([u for u in units if not u["completed"]])
+            
+            for unit in completed_units:
+                completed_at_str = unit["completed_at"]
+                if 'T' in completed_at_str:
+                    completed_date = datetime.fromisoformat(completed_at_str.replace("Z", "+00:00"))
+                    if oldest_completion_date is None or completed_date < oldest_completion_date:
+                        oldest_completion_date = completed_date
+        
+        deadline_str = discipline["deadline"]
+        if 'T' in deadline_str:
+            deadline_date = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+        else:
+            deadline_date = datetime.fromisoformat(deadline_str + "T00:00:00+00:00")
+        
+        if earliest_deadline is None or deadline_date < earliest_deadline:
+            earliest_deadline = deadline_date
+    
+    if total_completed_units == 0 or oldest_completion_date is None:
+        average_productivity = 0
+        study_days = 0
+    else:
+        study_days = max(1, (now - oldest_completion_date).days)
+        average_productivity = total_completed_units / study_days
+    
+    scenarios = []
+    
+    for units_per_day in [1, 2, 3]:
+        if units_per_day > 0:
+            days_until_completion = int(total_remaining_units / units_per_day)
+            predicted_date = now + timedelta(days=days_until_completion)
+            
+            on_track = True
+            if earliest_deadline and predicted_date > earliest_deadline:
+                on_track = False
+            
+            scenarios.append(CompletionPrediction(
+                scenario=f"{units_per_day} UA/dia",
+                units_per_day=float(units_per_day),
+                predicted_completion_date=predicted_date.strftime("%d/%m/%Y"),
+                days_until_completion=days_until_completion,
+                on_track=on_track
+            ))
+    
+    current_prediction = None
+    warning = None
+    
+    if average_productivity > 0 and total_remaining_units > 0:
+        days_until_completion = int(total_remaining_units / average_productivity)
+        predicted_date = now + timedelta(days=days_until_completion)
+        
+        on_track = True
+        if earliest_deadline and predicted_date > earliest_deadline:
+            on_track = False
+            warning = "⚠ Nesse ritmo você terminará após o prazo"
+        
+        current_prediction = CompletionPrediction(
+            scenario="Ritmo atual",
+            units_per_day=round(average_productivity, 2),
+            predicted_completion_date=predicted_date.strftime("%d/%m/%Y"),
+            days_until_completion=days_until_completion,
+            on_track=on_track
+        )
+    
+    return CompletionSimulation(
+        average_productivity=round(average_productivity, 2),
+        current_prediction=current_prediction,
+        scenarios=scenarios,
+        warning=warning
+    )
+
+
 app.include_router(api_router)
 
 app.add_middleware(
