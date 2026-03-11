@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import DisciplinesPage from './pages/DisciplinesPage';
 import DisciplineDetailPage from './pages/DisciplineDetailPage';
+import StudyCyclePage from './pages/StudyCyclePage';
 import SettingsPage from './pages/SettingsPage';
 import './App.css';
 
