@@ -51,18 +51,18 @@ const LandingPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="font-sans font-semibold text-5xl sm:text-6xl tracking-tight text-white mb-6">
+              <h1 className="font-sans font-semibold text-4xl sm:text-5xl md:text-6xl tracking-tight text-white mb-6">
                 Estude com foco.
                 <br />
                 <span className="text-primary">Sem distrações.</span>
               </h1>
-              <p className="font-sans text-lg text-slate-400 mb-8 leading-relaxed">
+              <p className="font-sans text-base sm:text-lg text-slate-400 mb-8 leading-relaxed">
                 Arc Planner é um sistema de planejamento de estudos minimalista que ajuda você a organizar disciplinas, trilhas de aprendizado e unidades de estudo. Sem ruído visual, apenas progresso.
               </p>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={() => navigate('/register')}
-                  className="h-12 px-8 bg-primary text-white hover:bg-primary/90 shadow-[0_1px_2px_rgba(0,0,0,0.5)] text-base active:scale-95 transition-all"
+                  className="h-11 sm:h-12 px-6 sm:px-8 bg-primary text-white hover:bg-primary/90 shadow-[0_1px_2px_rgba(0,0,0,0.5)] text-base active:scale-95 transition-all"
                   data-testid="hero-register-button"
                 >
                   Começar agora
