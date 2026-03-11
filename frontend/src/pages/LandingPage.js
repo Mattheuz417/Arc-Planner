@@ -10,28 +10,30 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background noise-bg">
       <nav className="backdrop-blur-md bg-slate-900/80 border-b border-white/5 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-primary flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
               </div>
-              <span className="font-sans font-semibold text-lg tracking-tight text-white">Arc Planner</span>
+              <span className="font-sans font-semibold text-base sm:text-lg tracking-tight text-white">Arc Planner</span>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <Button
                 onClick={() => navigate('/login')}
                 variant="ghost"
-                className="text-slate-400 hover:text-white hover:bg-slate-800"
+                size="sm"
+                className="text-slate-400 hover:text-white hover:bg-slate-800 text-sm"
                 data-testid="nav-login-button"
               >
                 Entrar
               </Button>
               <Button
                 onClick={() => navigate('/register')}
-                className="bg-primary text-white hover:bg-primary/90 shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                size="sm"
+                className="bg-primary text-white hover:bg-primary/90 shadow-[0_1px_2px_rgba(0,0,0,0.5)] text-sm"
                 data-testid="nav-register-button"
               >
                 Criar conta
@@ -41,7 +43,7 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      <section className="relative pt-24 pb-32">
+      <section className="relative pt-12 sm:pt-16 md:pt-24 pb-16 sm:pb-24 md:pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
