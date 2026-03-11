@@ -47,7 +47,7 @@ const DashboardPage = () => {
       const today = new Date().toISOString().split('T')[0];
       await axios.post(`${API_URL}/days-off`, { date: today });
       toast.success('Folga registrada com sucesso!');
-      fetchStats();
+      fetchDashboardData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Erro ao registrar folga');
     } finally {
