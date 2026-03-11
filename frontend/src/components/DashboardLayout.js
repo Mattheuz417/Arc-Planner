@@ -18,6 +18,7 @@ export const DashboardLayout = ({ children }) => {
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Painel' },
     { path: '/disciplines', icon: BookOpen, label: 'Disciplinas' },
+    { path: '/study-cycle', icon: RefreshCw, label: 'Ciclo de Estudos' },
     { path: '/settings', icon: Settings, label: 'Configurações' },
   ];
 
