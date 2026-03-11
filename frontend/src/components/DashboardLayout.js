@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from './ui/button';
-import { LayoutDashboard, BookOpen, Settings, LogOut, CircleUser } from 'lucide-react';
+import { LayoutDashboard, BookOpen, RefreshCw, Settings, LogOut, CircleUser } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const DashboardLayout = ({ children }) => {
