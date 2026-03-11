@@ -89,16 +89,16 @@ const DashboardPage = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="mb-8">
-          <h1 className="font-sans font-semibold text-4xl tracking-tight text-white mb-2">
+        <div className="mb-6 md:mb-8">
+          <h1 className="font-sans font-semibold text-3xl sm:text-4xl tracking-tight text-white mb-2">
             Painel
           </h1>
-          <p className="font-sans text-base text-slate-400">
+          <p className="font-sans text-sm sm:text-base text-slate-400">
             Visão geral do seu progresso
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 mb-6 md:mb-8">
           <div className="col-span-12 md:col-span-8">
             <div className="bg-card border border-border/50 rounded-lg p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
