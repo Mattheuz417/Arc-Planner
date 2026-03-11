@@ -114,8 +114,8 @@ const DisciplineDetailPage = () => {
     );
   }
 
-  const totalUnits = tracks.reduce((sum, track) => sum + track.units.length, 0);
-  const completedUnits = tracks.reduce((sum, track) => sum + track.units.filter(u => u.completed).length, 0);
+  const totalUnits = tracks.reduce((sum, track) => sum + (track.units?.length || 0), 0);
+  const completedUnits = tracks.reduce((sum, track) => sum + (track.units?.filter(u => u.completed).length || 0), 0);
   const progressPercentage = totalUnits > 0 ? Math.round((completedUnits / totalUnits) * 100) : 0;
 
   return (
