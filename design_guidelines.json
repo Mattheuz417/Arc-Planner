@@ -1,0 +1,132 @@
+{
+  "project_name": "Arc Planner",
+  "design_philosophy": {
+    "core_concept": "Digital Monastery",
+    "vibe": "Low Dopamine, High Focus, Stoic Utility",
+    "principles": [
+      "No Confetti: Celebration is progress, not particles.",
+      "Data over Decoration: If it doesn't help you study, delete it.",
+      "Darkness is Focus: The interface recedes; the content advances.",
+      "Tactile Precision: Buttons click, they don't float. Inputs feel solid."
+    ]
+  },
+  "theme": {
+    "mode": "dark",
+    "radius": "0.3rem"
+  },
+  "typography": {
+    "font_family": {
+      "sans": ["Inter", "sans-serif"],
+      "mono": ["JetBrains Mono", "monospace"]
+    },
+    "styles": {
+      "h1": "font-sans font-semibold text-4xl tracking-tight text-white",
+      "h2": "font-sans font-medium text-2xl tracking-tight text-slate-100",
+      "h3": "font-sans font-medium text-xl tracking-tight text-slate-200",
+      "body": "font-sans text-base text-slate-400 leading-relaxed",
+      "label": "font-mono text-xs uppercase tracking-wider text-slate-500",
+      "data": "font-mono text-sm text-slate-300"
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": "#0F172A",
+      "foreground": "#E2E8F0",
+      "card": "#1E293B",
+      "card_foreground": "#F8FAFC",
+      "primary": "#2563EB",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#5B21B6",
+      "secondary_foreground": "#FFFFFF",
+      "muted": "#334155",
+      "muted_foreground": "#94A3B8",
+      "accent": "#1E293B",
+      "accent_foreground": "#F8FAFC",
+      "destructive": "#7F1D1D",
+      "destructive_foreground": "#FECACA",
+      "border": "#334155",
+      "input": "#334155",
+      "ring": "#2563EB",
+      "success": "#22C55E",
+      "warning": "#F59E0B"
+    },
+    "usage_rules": [
+      "NEVER use gradients for backgrounds. Solid Slate-900 only.",
+      "Use Primary Blue (#2563EB) ONLY for the main action on the screen.",
+      "Use Secondary Purple (#5B21B6) for 'Deep Work' or 'Focus Mode' related elements.",
+      "Success Green is for completed UAs only.",
+      "Borders should be subtle: border-slate-800 or border-white/5."
+    ]
+  },
+  "layout": {
+    "spacing_scale": "Generous. Use p-6 or p-8 for cards. gap-6 for grids.",
+    "grid_system": {
+      "dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6",
+      "card_spans": {
+        "hero": "col-span-12 md:col-span-8 lg:col-span-9",
+        "sidebar": "col-span-12 md:col-span-4 lg:col-span-3",
+        "stat": "col-span-6 md:col-span-3"
+      }
+    },
+    "containers": {
+      "main": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8",
+      "focus_mode": "max-w-2xl mx-auto h-screen flex flex-col justify-center"
+    }
+  },
+  "components": {
+    "buttons": {
+      "default": "h-10 px-4 py-2 rounded-md font-medium transition-all active:scale-95",
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_1px_2px_rgba(0,0,0,0.5)]",
+      "ghost": "hover:bg-slate-800 text-slate-400 hover:text-white"
+    },
+    "cards": {
+      "style": "bg-card border border-border/50 shadow-sm rounded-lg",
+      "hover": "hover:border-primary/50 transition-colors duration-300"
+    },
+    "inputs": {
+      "style": "bg-slate-950/50 border-slate-800 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+    },
+    "status_indicators": {
+      "completed": "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20",
+      "pending": "bg-slate-800 text-slate-400 border border-slate-700",
+      "active": "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-md bg-slate-900/80 border-b border-white/5 (Use only for sticky headers)",
+    "noise": "Add a subtle noise texture overlay at 2% opacity to the background to reduce digital flatness.",
+    "shadows": "shadow-xl shadow-black/20 for floating elements. No diffuse colored shadows."
+  },
+  "motion": {
+    "library": "framer-motion",
+    "instructions": "Install framer-motion. Use it for layout transitions (layout prop) and subtle entrance animations.",
+    "presets": {
+      "fade_in": { "initial": { "opacity": 0, "y": 10 }, "animate": { "opacity": 1, "y": 0 }, "transition": { "duration": 0.4 } },
+      "stagger": { "container": { "hidden": { "opacity": 0 }, "show": { "opacity": 1, "transition": { "staggerChildren": 0.1 } } } }
+    }
+  },
+  "assets": {
+    "images": {
+      "landing_hero": "https://images.unsplash.com/photo-1574081105756-3c8d8ed70198?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwZGVzayUyMHNldHVwJTIwZGFyayUyMG1vZGV8ZW58MHx8fHwxNzczMjU2ODY2fDA&ixlib=rb-4.1.0&q=85",
+      "focus_feature": "https://images.unsplash.com/photo-1738831651985-e242f111309d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MjJ8MHwxfHNlYXJjaHwzfHxzdHVkZW50JTIwc3R1ZHlpbmclMjBmb2N1c2VkJTIwbGlicmFyeSUyMG5pZ2h0fGVufDB8fHx8MTc3MzI1Njg3MXww&ixlib=rb-4.1.0&q=85",
+      "logo_placeholder": "Use a simple geometric arc shape (SVG) in Primary Blue."
+    },
+    "icons": "Lucide React (already installed). Use thin strokes (stroke-width={1.5}) for elegance."
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALLATION: Run 'yarn add framer-motion clsx tailwind-merge' if not present.",
+    "2. CSS VARIABLES: Update /app/frontend/src/index.css to match the 'colors.palette' defined above. Specifically, override the 'card' and 'background' colors for dark mode.",
+    "3. LAYOUT: Implement the 'DashboardLayout' using a fixed sidebar and a scrollable main area.",
+    "4. EMPTY STATE: Since the DB starts empty, create a beautiful 'Empty State' component for the Dashboard that guides the user to 'Create your first Discipline'. Do not leave it blank.",
+    "5. DATA-TESTID: Add data-testid to all interactive elements (buttons, inputs, cards). Format: 'page-section-element-action'.",
+    "6. TOASTS: Use 'sonner' for all notifications. Style them to match the dark theme (black bg, white text, thin border).",
+    "7. DATE PICKER: Use the Shadcn Calendar component. Do not use native date inputs.",
+    "8. CHARTS: Use Recharts. Style the tooltips to be dark and minimal."
+  ],
+  "universal_guidelines": [
+    "Avoid 'AI Slop': Do not use generic centered layouts. Use asymmetry.",
+    "Dark Mode Only: The app is strictly dark mode. Do not implement a light mode toggle unless explicitly requested later.",
+    "Input Focus: When an input is focused, the border should be Primary Blue, but the ring should be subtle.",
+    "Typography: Always use 'tracking-tight' for headings (h1, h2, h3)."
+  ]
+}
