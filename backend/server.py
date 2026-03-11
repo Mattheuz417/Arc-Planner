@@ -110,6 +110,14 @@ class DayOff(BaseModel):
     date: str
 
 
+class SmartDaysOff(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    available_days_off: int
+    days_off_used: int
+    can_take_day_off: bool
+    message: str
+
+
 class DashboardStats(BaseModel):
     model_config = ConfigDict(extra="ignore")
     total_disciplines: int
@@ -118,6 +126,7 @@ class DashboardStats(BaseModel):
     remaining_units: int
     days_off_count: int
     disciplines: List[dict]
+    smart_days_off: Optional[SmartDaysOff] = None
 
 
 def create_access_token(data: dict):
