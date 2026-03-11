@@ -96,6 +96,14 @@ function App() {
               }
             />
             <Route
+              path="/study-cycle"
+              element={
+                <ProtectedRoute>
+                  <StudyCyclePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
