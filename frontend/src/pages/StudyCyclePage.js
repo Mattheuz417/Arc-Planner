@@ -254,12 +254,12 @@ const StudyCyclePage = () => {
                 transition={{ duration: 0.4 }}
                 className="bg-card border border-primary/30 rounded-lg p-6 shadow-sm"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex-1">
                     <p className="font-mono text-xs uppercase tracking-wider text-slate-500 mb-2">
                       Disciplina de Hoje
                     </p>
-                    <h2 className="font-sans font-semibold text-2xl tracking-tight text-white mb-1">
+                    <h2 className="font-sans font-semibold text-xl sm:text-2xl tracking-tight text-white mb-1">
                       {cycleItems[0].discipline_name}
                     </h2>
                     <p className="font-sans text-sm text-slate-400">
@@ -269,11 +269,12 @@ const StudyCyclePage = () => {
                   <Button
                     onClick={handleCompleteToday}
                     disabled={completingToday}
-                    className="bg-success text-white hover:bg-success/90 shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                    className="bg-success text-white hover:bg-success/90 shadow-[0_1px_2px_rgba(0,0,0,0.5)] w-full sm:w-auto"
                     data-testid="complete-today-button"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Estudo concluído hoje
+                    <span className="hidden sm:inline">Estudo concluído hoje</span>
+                    <span className="sm:hidden">Concluir hoje</span>
                   </Button>
                 </div>
               </motion.div>
