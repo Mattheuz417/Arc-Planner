@@ -936,6 +936,262 @@ async def get_smart_days_off(current_user: User = Depends(get_current_user)):
     )
 
 
+
+# Study Cycle Endpoints
+@api_router.post("/study-cycle", response_model=StudyCycle)
+async def create_study_cycle(cycle_data: StudyCycleCreate, current_user: User = Depends(get_current_user)):
+    # Deactivate any existing active cycles
+    await db.study_cycles.update_many(
+        {"user_id": current_user.id, "active": True},
+        {"$set": {"active": False}}
+    )
+    
+    cycle_id = str(uuid.uuid4())
+    cycle_doc = {
+        "id": cycle_id,
+        "user_id": current_user.id,
+        "name": cycle_data.name,
+        "active": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.study_cycles.insert_one(cycle_doc)
+    return StudyCycle(**cycle_doc)
+
+
+@api_router.get("/study-cycle", response_model=Optional[StudyCycle])
+async def get_active_cycle(current_user: User = Depends(get_current_user)):
+    cycle = await db.study_cycles.find_one(
+        {"user_id": current_user.id, "active": True},
+        {"_id": 0}
+    )
+    if not cycle:
+        return None
+    return StudyCycle(**cycle)
+
+
+@api_router.delete("/study-cycle/{cycle_id}")
+async def delete_cycle(cycle_id: str, current_user: User = Depends(get_current_user)):
+    result = await db.study_cycles.delete_one({"id": cycle_id, "user_id": current_user.id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Ciclo não encontrado")
+    
+    # Delete all cycle items
+    await db.cycle_items.delete_many({"cycle_id": cycle_id})
+    return {"message": "Ciclo deletado com sucesso"}
+
+
+@api_router.post("/study-cycle/{cycle_id}/items", response_model=CycleItem)
+async def add_discipline_to_cycle(
+    cycle_id: str,
+    item_data: CycleItemCreate,
+    current_user: User = Depends(get_current_user)
+):
+    # Verify cycle ownership
+    cycle = await db.study_cycles.find_one({"id": cycle_id, "user_id": current_user.id})
+    if not cycle:
+        raise HTTPException(status_code=404, detail="Ciclo não encontrado")
+    
+    # Verify discipline ownership
+    discipline = await db.disciplines.find_one({"id": item_data.discipline_id, "user_id": current_user.id})
+    if not discipline:
+        raise HTTPException(status_code=404, detail="Disciplina não encontrada")
+    
+    # Check if already in cycle
+    existing = await db.cycle_items.find_one({"cycle_id": cycle_id, "discipline_id": item_data.discipline_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Disciplina já está no ciclo")
+    
+    # Get max order
+    max_order_item = await db.cycle_items.find_one(
+        {"cycle_id": cycle_id},
+        {"_id": 0, "order": 1},
+        sort=[("order", -1)]
+    )
+    order = (max_order_item["order"] + 1) if max_order_item else 0
+    
+    item_id = str(uuid.uuid4())
+    item_doc = {
+        "id": item_id,
+        "cycle_id": cycle_id,
+        "discipline_id": item_data.discipline_id,
+        "order": order
+    }
+    await db.cycle_items.insert_one(item_doc)
+    
+    return CycleItem(
+        id=item_id,
+        cycle_id=cycle_id,
+        discipline_id=item_data.discipline_id,
+        discipline_name=discipline["name"],
+        order=order,
+        is_current=False
+    )
+
+
+@api_router.get("/study-cycle/{cycle_id}/items", response_model=List[CycleItem])
+async def get_cycle_items(cycle_id: str, current_user: User = Depends(get_current_user)):
+    # Verify cycle ownership
+    cycle = await db.study_cycles.find_one({"id": cycle_id, "user_id": current_user.id})
+    if not cycle:
+        raise HTTPException(status_code=404, detail="Ciclo não encontrado")
+    
+    items = await db.cycle_items.find(
+        {"cycle_id": cycle_id},
+        {"_id": 0}
+    ).sort("order", 1).to_list(1000)
+    
+    # Get discipline names and determine current item
+    result = []
+    for idx, item in enumerate(items):
+        discipline = await db.disciplines.find_one({"id": item["discipline_id"]}, {"_id": 0, "name": 1})
+        result.append(CycleItem(
+            id=item["id"],
+            cycle_id=item["cycle_id"],
+            discipline_id=item["discipline_id"],
+            discipline_name=discipline["name"] if discipline else "Unknown",
+            order=item["order"],
+            is_current=(idx == 0)  # First item is current
+        ))
+    
+    return result
+
+
+@api_router.delete("/study-cycle/{cycle_id}/items/{item_id}")
+async def remove_item_from_cycle(
+    cycle_id: str,
+    item_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    # Verify cycle ownership
+    cycle = await db.study_cycles.find_one({"id": cycle_id, "user_id": current_user.id})
+    if not cycle:
+        raise HTTPException(status_code=404, detail="Ciclo não encontrado")
+    
+    result = await db.cycle_items.delete_one({"id": item_id, "cycle_id": cycle_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item não encontrado")
+    
+    return {"message": "Item removido do ciclo"}
+
+
+@api_router.post("/study-cycle/{cycle_id}/reorder")
+async def reorder_cycle_items(
+    cycle_id: str,
+    reorder_data: CycleItemReorder,
+    current_user: User = Depends(get_current_user)
+):
+    # Verify cycle ownership
+    cycle = await db.study_cycles.find_one({"id": cycle_id, "user_id": current_user.id})
+    if not cycle:
+        raise HTTPException(status_code=404, detail="Ciclo não encontrado")
+    
+    for idx, item_id in enumerate(reorder_data.item_ids):
+        await db.cycle_items.update_one(
+            {"id": item_id, "cycle_id": cycle_id},
+            {"$set": {"order": idx}}
+        )
+    
+    return {"message": "Ciclo reordenado com sucesso"}
+
+
+@api_router.post("/study-cycle/{cycle_id}/complete-today")
+async def complete_cycle_today(cycle_id: str, current_user: User = Depends(get_current_user)):
+    """
+    Mark today's cycle item as complete and advance to next discipline.
+    When last item is completed, cycle restarts automatically.
+    """
+    # Verify cycle ownership
+    cycle = await db.study_cycles.find_one({"id": cycle_id, "user_id": current_user.id})
+    if not cycle:
+        raise HTTPException(status_code=404, detail="Ciclo não encontrado")
+    
+    # Get all items sorted by order
+    items = await db.cycle_items.find(
+        {"cycle_id": cycle_id},
+        {"_id": 0}
+    ).sort("order", 1).to_list(1000)
+    
+    if not items:
+        raise HTTPException(status_code=400, detail="Ciclo não tem disciplinas")
+    
+    # Move first item to the end (rotate cycle)
+    first_item = items[0]
+    max_order = max(item["order"] for item in items)
+    
+    # Update first item to be last
+    await db.cycle_items.update_one(
+        {"id": first_item["id"]},
+        {"$set": {"order": max_order + 1}}
+    )
+    
+    # Shift all other items down
+    for item in items[1:]:
+        await db.cycle_items.update_one(
+            {"id": item["id"]},
+            {"$set": {"order": item["order"] - 1}}
+        )
+    
+    # Get discipline name for response
+    discipline = await db.disciplines.find_one({"id": items[1]["discipline_id"] if len(items) > 1 else first_item["discipline_id"]}, {"_id": 0, "name": 1})
+    next_discipline_name = discipline["name"] if discipline else "Unknown"
+    
+    return {
+        "message": "Estudo de hoje concluído!",
+        "next_discipline": next_discipline_name
+    }
+
+
+@api_router.get("/study-cycle/status")
+async def get_cycle_status(current_user: User = Depends(get_current_user)):
+    """Get current cycle status including today's discipline"""
+    cycle = await db.study_cycles.find_one(
+        {"user_id": current_user.id, "active": True},
+        {"_id": 0}
+    )
+    
+    if not cycle:
+        return CycleStatus(
+            has_cycle=False,
+            current_item=None,
+            all_items=[],
+            cycle_completed_today=False
+        )
+    
+    # Get all items
+    items = await db.cycle_items.find(
+        {"cycle_id": cycle["id"]},
+        {"_id": 0}
+    ).sort("order", 1).to_list(1000)
+    
+    if not items:
+        return CycleStatus(
+            has_cycle=True,
+            current_item=None,
+            all_items=[],
+            cycle_completed_today=False
+        )
+    
+    # Build items list with discipline names
+    result_items = []
+    for idx, item in enumerate(items):
+        discipline = await db.disciplines.find_one({"id": item["discipline_id"]}, {"_id": 0, "name": 1})
+        result_items.append(CycleItem(
+            id=item["id"],
+            cycle_id=item["cycle_id"],
+            discipline_id=item["discipline_id"],
+            discipline_name=discipline["name"] if discipline else "Unknown",
+            order=item["order"],
+            is_current=(idx == 0)
+        ))
+    
+    return CycleStatus(
+        has_cycle=True,
+        current_item=result_items[0] if result_items else None,
+        all_items=result_items,
+        cycle_completed_today=False
+    )
+
+
 app.include_router(api_router)
 
 app.add_middleware(
