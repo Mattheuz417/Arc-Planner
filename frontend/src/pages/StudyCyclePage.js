@@ -176,12 +176,12 @@ const StudyCyclePage = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="font-sans font-semibold text-4xl tracking-tight text-white mb-2">
+            <h1 className="font-sans font-semibold text-3xl sm:text-4xl tracking-tight text-white mb-2">
               🔄 Ciclo de Estudos
             </h1>
-            <p className="font-sans text-base text-slate-400">
+            <p className="font-sans text-sm sm:text-base text-slate-400">
               Alterne entre disciplinas seguindo um ciclo personalizado
             </p>
           </div>
