@@ -3,7 +3,7 @@ import { DashboardLayout } from '../components/DashboardLayout';
 import { EmptyState } from '../components/EmptyState';
 import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';
-import { Calendar, TrendingUp, Target, BookOpen, Coffee } from 'lucide-react';
+import { Calendar, TrendingUp, Target, BookOpen, Coffee, Lightbulb, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -14,20 +14,28 @@ const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [studySuggestion, setStudySuggestion] = useState(null);
+  const [completionSimulation, setCompletionSimulation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [takingDayOff, setTakingDayOff] = useState(false);
 
   useEffect(() => {
-    fetchStats();
+    fetchDashboardData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const response = await axios.get(`${API_URL}/dashboard/stats`);
-      setStats(response.data);
+      const [statsRes, suggestionRes, simulationRes] = await Promise.all([
+        axios.get(`${API_URL}/dashboard/stats`),
+        axios.get(`${API_URL}/dashboard/study-suggestion`),
+        axios.get(`${API_URL}/dashboard/completion-simulation`)
+      ]);
+      setStats(statsRes.data);
+      setStudySuggestion(suggestionRes.data);
+      setCompletionSimulation(simulationRes.data);
     } catch (error) {
-      console.error('Error fetching stats:', error);
-      toast.error('Erro ao carregar estatísticas');
+      console.error('Error fetching dashboard data:', error);
+      toast.error('Erro ao carregar dados do dashboard');
     } finally {
       setLoading(false);
     }
