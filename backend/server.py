@@ -770,6 +770,128 @@ async def get_completion_simulation(current_user: User = Depends(get_current_use
     )
 
 
+
+@api_router.get("/dashboard/smart-days-off")
+async def get_smart_days_off(current_user: User = Depends(get_current_user)):
+    """
+    Calcula folgas disponíveis baseado no ritmo de estudo do usuário.
+    
+    Fórmula:
+    prazo_total = deadline - hoje
+    predicted_days_to_finish = remaining_UA / units_per_day
+    folgas_possiveis = prazo_total - predicted_days_to_finish
+    """
+    disciplines = await db.disciplines.find(
+        {"user_id": current_user.id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    if not disciplines:
+        return SmartDaysOff(
+            available_days_off=0,
+            days_off_used=0,
+            can_take_day_off=False,
+            message="Crie disciplinas para começar"
+        )
+    
+    now = datetime.now(timezone.utc)
+    
+    # Calculate average productivity
+    total_completed_units = 0
+    oldest_completion_date = None
+    total_remaining_units = 0
+    earliest_deadline = None
+    
+    for discipline in disciplines:
+        tracks = await db.tracks.find(
+            {"discipline_id": discipline["id"]},
+            {"_id": 0, "id": 1}
+        ).to_list(1000)
+        
+        track_ids = [t["id"] for t in tracks]
+        
+        if track_ids:
+            units = await db.units.find(
+                {"track_id": {"$in": track_ids}},
+                {"_id": 0}
+            ).to_list(10000)
+            
+            completed_units = [u for u in units if u["completed"] and u.get("completed_at")]
+            total_completed_units += len(completed_units)
+            total_remaining_units += len([u for u in units if not u["completed"]])
+            
+            for unit in completed_units:
+                completed_at_str = unit["completed_at"]
+                if 'T' in completed_at_str:
+                    completed_date = datetime.fromisoformat(completed_at_str.replace("Z", "+00:00"))
+                    if oldest_completion_date is None or completed_date < oldest_completion_date:
+                        oldest_completion_date = completed_date
+        
+        deadline_str = discipline["deadline"]
+        if 'T' in deadline_str:
+            deadline_date = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+        else:
+            deadline_date = datetime.fromisoformat(deadline_str + "T00:00:00+00:00")
+        
+        if earliest_deadline is None or deadline_date < earliest_deadline:
+            earliest_deadline = deadline_date
+    
+    days_off_used = await db.days_off.count_documents({"user_id": current_user.id})
+    
+    # If no productivity data yet
+    if total_completed_units == 0 or oldest_completion_date is None:
+        if earliest_deadline:
+            prazo_total = max(0, (earliest_deadline - now).days)
+            available_days_off = max(0, prazo_total - total_remaining_units)
+            
+            return SmartDaysOff(
+                available_days_off=available_days_off,
+                days_off_used=days_off_used,
+                can_take_day_off=available_days_off > 0,
+                message=f"Você tem {available_days_off} dias de folga possíveis" if available_days_off > 0 else "Complete algumas UAs para calcular suas folgas"
+            )
+        else:
+            return SmartDaysOff(
+                available_days_off=0,
+                days_off_used=days_off_used,
+                can_take_day_off=False,
+                message="Configure prazos para suas disciplinas"
+            )
+    
+    # Calculate average productivity
+    study_days = max(1, (now - oldest_completion_date).days)
+    units_per_day = total_completed_units / study_days
+    
+    if units_per_day == 0 or not earliest_deadline:
+        return SmartDaysOff(
+            available_days_off=0,
+            days_off_used=days_off_used,
+            can_take_day_off=False,
+            message="Estude mais para calcular suas folgas disponíveis"
+        )
+    
+    # Calculate available days off
+    prazo_total = max(0, (earliest_deadline - now).days)
+    predicted_days_to_finish = int(total_remaining_units / units_per_day)
+    folgas_possiveis = max(0, prazo_total - predicted_days_to_finish - days_off_used)
+    
+    can_take = folgas_possiveis > 0
+    
+    if folgas_possiveis > 0:
+        message = f"Você tem {folgas_possiveis} dias de folga disponíveis"
+    elif folgas_possiveis == 0:
+        message = "Você não tem folgas disponíveis no momento"
+    else:
+        message = "Aumente seu ritmo de estudo para ganhar folgas"
+    
+    return SmartDaysOff(
+        available_days_off=folgas_possiveis,
+        days_off_used=days_off_used,
+        can_take_day_off=can_take,
+        message=message
+    )
+
+
 app.include_router(api_router)
 
 app.add_middleware(
