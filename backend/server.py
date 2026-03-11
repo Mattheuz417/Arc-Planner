@@ -491,8 +491,18 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
             completed_units += disc_completed
             
             from datetime import datetime
-            deadline_date = datetime.fromisoformat(discipline["deadline"].replace("Z", "+00:00"))
-            start_date = datetime.fromisoformat(discipline["start_date"].replace("Z", "+00:00"))
+            # Handle timezone-aware datetime parsing
+            deadline_str = discipline["deadline"]
+            start_str = discipline["start_date"]
+            
+            # Ensure timezone info is present
+            if not deadline_str.endswith('Z') and '+' not in deadline_str:
+                deadline_str += 'Z'
+            if not start_str.endswith('Z') and '+' not in start_str:
+                start_str += 'Z'
+                
+            deadline_date = datetime.fromisoformat(deadline_str.replace("Z", "+00:00"))
+            start_date = datetime.fromisoformat(start_str.replace("Z", "+00:00"))
             now = datetime.now(timezone.utc)
             
             total_days = (deadline_date - start_date).days
