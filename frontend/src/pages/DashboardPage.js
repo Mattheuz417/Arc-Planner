@@ -140,15 +140,40 @@ const DashboardPage = () => {
           <div className="col-span-12 md:col-span-4">
             <div className="bg-card border border-border/50 rounded-lg p-6 shadow-sm h-full">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-primary" strokeWidth={1.5} />
+                <div className="w-10 h-10 rounded bg-success/10 flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-success" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-sans font-medium text-xl tracking-tight text-slate-200">
-                  Folgas
+                  🌴 Folgas Inteligentes
                 </h3>
               </div>
-              <p className="font-mono text-3xl text-slate-300 mb-2" data-testid="days-off-stat">{stats.days_off_count}</p>
-              <p className="font-sans text-sm text-slate-400">dias de descanso</p>
+              {stats.smart_days_off && (
+                <>
+                  <div className="mb-4">
+                    <p className="font-mono text-3xl text-success mb-1" data-testid="available-days-off">
+                      {stats.smart_days_off.available_days_off}
+                    </p>
+                    <p className="font-sans text-sm text-slate-400 mb-2">
+                      {stats.smart_days_off.message}
+                    </p>
+                    <p className="font-mono text-xs text-slate-500">
+                      Folgas usadas: {stats.smart_days_off.days_off_used}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleTakeDayOff}
+                    disabled={takingDayOff || !stats.smart_days_off.can_take_day_off}
+                    className={`w-full ${
+                      stats.smart_days_off.can_take_day_off
+                        ? 'bg-success text-white hover:bg-success/90'
+                        : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                    }`}
+                    data-testid="smart-take-day-off-button"
+                  >
+                    {stats.smart_days_off.can_take_day_off ? '✅ Tirar folga hoje' : '🚫 Sem folgas disponíveis'}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
