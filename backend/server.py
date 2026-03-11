@@ -129,6 +129,46 @@ class DashboardStats(BaseModel):
     smart_days_off: Optional[SmartDaysOff] = None
 
 
+
+class StudyCycleCreate(BaseModel):
+    name: str
+
+
+class StudyCycle(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    user_id: str
+    name: str
+    active: bool
+    created_at: str
+
+
+class CycleItemCreate(BaseModel):
+    discipline_id: str
+
+
+class CycleItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    cycle_id: str
+    discipline_id: str
+    discipline_name: str
+    order: int
+    is_current: bool
+
+
+class CycleItemReorder(BaseModel):
+    item_ids: List[str]
+
+
+class CycleStatus(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    has_cycle: bool
+    current_item: Optional[CycleItem]
+    all_items: List[CycleItem]
+    cycle_completed_today: bool
+
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
