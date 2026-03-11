@@ -129,39 +129,15 @@ const DashboardPage = () => {
             <div className="bg-card border border-border/50 rounded-lg p-6 shadow-sm h-full">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded bg-success/10 flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-success" strokeWidth={1.5} />
+                  <Coffee className="w-5 h-5 text-success" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-sans font-medium text-xl tracking-tight text-slate-200">
-                  🌴 Folgas Inteligentes
+                  💚 Lembrete de Descanso
                 </h3>
               </div>
-              {stats.smart_days_off && (
-                <>
-                  <div className="mb-4">
-                    <p className="font-mono text-3xl text-success mb-1" data-testid="available-days-off">
-                      {stats.smart_days_off.available_days_off}
-                    </p>
-                    <p className="font-sans text-sm text-slate-400 mb-2">
-                      {stats.smart_days_off.message}
-                    </p>
-                    <p className="font-mono text-xs text-slate-500">
-                      Folgas usadas: {stats.smart_days_off.days_off_used}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleTakeDayOff}
-                    disabled={takingDayOff || !stats.smart_days_off.can_take_day_off}
-                    className={`w-full ${
-                      stats.smart_days_off.can_take_day_off
-                        ? 'bg-success text-white hover:bg-success/90'
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                    }`}
-                    data-testid="smart-take-day-off-button"
-                  >
-                    {stats.smart_days_off.can_take_day_off ? '✅ Tirar folga hoje' : '🚫 Sem folgas disponíveis'}
-                  </Button>
-                </>
-              )}
+              <p className="font-sans text-base text-slate-300 leading-relaxed">
+                Estudar é bom, mas lembre de tirar ao menos 2 dias para folgar na semana!
+              </p>
             </div>
           </div>
         </div>
