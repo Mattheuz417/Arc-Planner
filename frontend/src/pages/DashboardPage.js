@@ -153,7 +153,138 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div>
+        {/* Study Suggestion Card */}
+        {studySuggestion?.suggestion && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="mt-8"
+          >
+            <div className="bg-card border border-primary/30 rounded-lg p-6 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-sans font-medium text-lg tracking-tight text-slate-200 mb-2 flex items-center gap-2">
+                    📌 Sugestão de estudo de hoje
+                  </h3>
+                  <div className="bg-slate-900/50 rounded-lg p-4 mb-3">
+                    <p className="font-sans text-base text-white mb-1">
+                      <span className="font-semibold">Disciplina:</span> {studySuggestion.suggestion.discipline_name}
+                    </p>
+                    <p className="font-sans text-sm text-slate-400">
+                      <span className="font-semibold">Motivo:</span> {studySuggestion.suggestion.reason}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-slate-500" strokeWidth={1.5} />
+                      <span className="font-mono text-slate-400">
+                        {studySuggestion.suggestion.remaining_units} UA restantes
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-slate-500" strokeWidth={1.5} />
+                      <span className="font-mono text-slate-400">
+                        {studySuggestion.suggestion.remaining_days} dias restantes
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => navigate(`/disciplines/${studySuggestion.suggestion.discipline_id}`)}
+                    className="mt-4 bg-primary text-white hover:bg-primary/90"
+                    data-testid="go-to-suggested-discipline"
+                  >
+                    Ir para disciplina
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Completion Simulation Card */}
+        {completionSimulation && (completionSimulation.current_prediction || completionSimulation.scenarios.length > 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="mt-6"
+          >
+            <div className="bg-card border border-border/50 rounded-lg p-6 shadow-sm">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-secondary" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-sans font-medium text-lg tracking-tight text-slate-200 mb-1">
+                    🔮 Simulação de conclusão
+                  </h3>
+                  <p className="font-sans text-sm text-slate-400">
+                    Previsões baseadas em diferentes ritmos de estudo
+                  </p>
+                </div>
+              </div>
+
+              {completionSimulation.current_prediction && (
+                <div className={`rounded-lg p-4 mb-4 ${
+                  completionSimulation.current_prediction.on_track 
+                    ? 'bg-emerald-500/10 border border-emerald-500/20' 
+                    : 'bg-amber-500/10 border border-amber-500/20'
+                }`}>
+                  <p className="font-sans text-sm text-slate-400 mb-2">
+                    <span className="font-semibold text-slate-300">Seu ritmo atual:</span> {completionSimulation.average_productivity} UA/dia
+                  </p>
+                  <p className="font-sans text-base text-white">
+                    Se você continuar nesse ritmo, terminará em{' '}
+                    <span className="font-semibold">{completionSimulation.current_prediction.predicted_completion_date}</span>
+                  </p>
+                  {completionSimulation.warning && (
+                    <div className="flex items-center gap-2 mt-3 text-amber-400">
+                      <AlertTriangle className="w-4 h-4" strokeWidth={1.5} />
+                      <span className="font-sans text-sm font-medium">{completionSimulation.warning}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <p className="font-mono text-xs uppercase tracking-wider text-slate-500 mb-3">
+                  Simulações de ritmo
+                </p>
+                {completionSimulation.scenarios.map((scenario, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center justify-between p-3 rounded-lg ${
+                      scenario.on_track
+                        ? 'bg-slate-800/50 border border-slate-700'
+                        : 'bg-slate-900/50 border border-slate-800'
+                    }`}
+                    data-testid={`simulation-scenario-${idx}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`font-mono text-sm font-semibold ${
+                        scenario.on_track ? 'text-emerald-400' : 'text-slate-400'
+                      }`}>
+                        {scenario.scenario}
+                      </span>
+                      <span className="font-sans text-sm text-slate-400">
+                        → conclusão em {scenario.predicted_completion_date}
+                      </span>
+                    </div>
+                    {scenario.on_track && (
+                      <span className="text-xs text-emerald-500 font-medium">✓ No prazo</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-sans font-medium text-2xl tracking-tight text-slate-100">
               Suas Disciplinas
