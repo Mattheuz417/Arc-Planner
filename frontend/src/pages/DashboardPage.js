@@ -89,25 +89,13 @@ const DashboardPage = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="font-sans font-semibold text-4xl tracking-tight text-white mb-2">
-              Painel
-            </h1>
-            <p className="font-sans text-base text-slate-400">
-              Visão geral do seu progresso
-            </p>
-          </div>
-          <Button
-            onClick={handleTakeDayOff}
-            disabled={takingDayOff}
-            variant="ghost"
-            className="text-slate-400 hover:text-white hover:bg-slate-800"
-            data-testid="take-day-off-button"
-          >
-            <Coffee className="w-4 h-4 mr-2" strokeWidth={1.5} />
-            Tirar folga hoje
-          </Button>
+        <div className="mb-8">
+          <h1 className="font-sans font-semibold text-4xl tracking-tight text-white mb-2">
+            Painel
+          </h1>
+          <p className="font-sans text-base text-slate-400">
+            Visão geral do seu progresso
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
