@@ -545,13 +545,17 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
     
     days_off_count = await db.days_off.count_documents({"user_id": current_user.id})
     
+    # Calculate smart days off
+    smart_days_off_response = await get_smart_days_off(current_user)
+    
     return DashboardStats(
         total_disciplines=len(disciplines),
         total_units=total_units,
         completed_units=completed_units,
         remaining_units=total_units - completed_units,
         days_off_count=days_off_count,
-        disciplines=discipline_stats
+        disciplines=discipline_stats,
+        smart_days_off=smart_days_off_response
     )
 
 
